@@ -172,6 +172,20 @@ void print_movies(const map<pair<string, int>, Movie>& movies){
 
 }
 
+void print_movies_from(const map<pair<string, int>, Movie>& movies, int year) {
+    bool any = false;
+    for ( const auto& data : movies ) {
+        const Movie& m = data.second;
+        if ( m.year == year ) {
+            cout << "  " << m.name << " (dir. " << m.director << ")" << endl;
+            any = true;
+        }
+    }
+    if ( !any ) {
+        cout << "No movies released in " << year << "." << endl;
+    }
+}
+
 
 
 int main()
@@ -200,6 +214,10 @@ int main()
         } else if ( command == "movies" ) {
             if ( fields.size() == 1 ) {
                 print_movies(movies);
+            } else if ( fields.size() == 3 && fields[1] == "from" ) {
+                int year;
+                year = stoi(fields[2]);
+                print_movies_from(movies, year);
             }
 
         } else if ( command == "quit" ) {
