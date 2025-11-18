@@ -140,16 +140,25 @@ void help() {
 
 }
 
+// Funktio muuttaa ohjaajan etunimen ja sukunimen paikan keskenään
+// ja poistaa pilkun.
+// Funktion parametrinä on movies map-säiliön director arvot.
+// Funktio palauttaa ohjaajan nimet käännettynä muodossa "etunimi sukunimi".
+string format_director(const string& director) {
+    vector<string> parts = split(director, ',', true);
+
+    return parts[1] + " " + parts[0];
+}
+
+
 // Funktio listaa kaikki ohjelmaan luetut elokuvat ensisijaisesti
 // julkaisuvuoden mukaan vanhemmasta uudempaan, ja sitten elokuvan
 // nimen mukaan aakkosjärjestyksessä.
-// Funktion parametrinä on map-säiliö movies,jonka avaimena on (nimi, vuosi)
+// Funktion parametrinä on map-säiliö movies, jonka avaimena on (nimi, vuosi)
 // ja arvona Movie-struct. Funktio ei palauta mitään.
 void print_movies(const map<pair<string, int>, Movie>& movies){
 
-    if ( movies.empty()) {
-        cout << "No movies." << endl;
-    }
+
 
     // Tallennetaan elokuvien tiedot vektoriin list.
     vector<Movie> list;
@@ -166,23 +175,42 @@ void print_movies(const map<pair<string, int>, Movie>& movies){
 
     // Suoritetaan tulostus.
     for (const Movie& m : list) {
-        cout << "  " << m.name << " (" << m.year << ", dir. " << m.director
+        cout << "  " << m.name << " (" << m.year << ", dir. " << format_director(m.director)
              << ")" << endl;
     }
 
 }
 
+// Listaa ne elokuvat, jotka on julkaistu parametrin määrittämänä vuotena
+// elokuvan nimen mukaan aakkosjärjestyksessä.
+// Funktion parametrina on map-säiliö movies, jonka avaimena on (nimi, vuosi)
+// ja arvona Movie-struct ja toisena parametrinä vuosi year.
+// Funktio ei palauta mitään.
 void print_movies_from(const map<pair<string, int>, Movie>& movies, int year) {
     bool any = false;
     for ( const auto& data : movies ) {
         const Movie& m = data.second;
         if ( m.year == year ) {
-            cout << "  " << m.name << " (dir. " << m.director << ")" << endl;
+            cout << "  " << m.name << " (dir. " << format_director(m.director) << ")" << endl;
             any = true;
         }
     }
     if ( !any ) {
         cout << "No movies released in " << year << "." << endl;
+    }
+}
+
+void print_movies_by(const map<set<string, int>, Movie>& movies, string director) {
+    bool any = false;
+    for ( const auto& data : movies ) {
+        const Movie& m = data.third;
+        if ( m.director == format_director(m.director) ) {
+            cout << "  " << m.name << " (" << m.year << ")" << endl;
+            any = true;
+        }
+    }
+    if ( !any ) {
+        cout << "No movies released in " << director << "." << endl;
     }
 }
 
@@ -212,14 +240,26 @@ int main()
 
 
         } else if ( command == "movies" ) {
-            if ( fields.size() == 1 ) {
+            if ( movies.empty()) {
+                cout << "No movies." << endl;
+            } else if ( fields.size() == 1 ) {
                 print_movies(movies);
             } else if ( fields.size() == 3 && fields[1] == "from" ) {
-                int year;
-                year = stoi(fields[2]);
-                print_movies_from(movies, year);
-            }
+                string year = fields[2];
+                bool digits = true;
+                for ( char c : year) {
+                    if ( !isdigit(c)) {
+                        digits = false;
+                        cout << "Error: invalid parameter." << endl;
+                        break;
+                    }
+                }
+                if (digits) {
 
+                    int year = stoi(fields[2]);
+                    print_movies_from(movies, year);
+                }
+        }
         } else if ( command == "quit" ) {
             return EXIT_SUCCESS;
 
@@ -233,5 +273,4 @@ int main()
 
         cout << " " << endl;
     }
-
 }
