@@ -307,7 +307,7 @@ void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const st
     }
 
     // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan ilman lambdaa.
-    sort(list.begin(), list.end(), compare_movies);
+    sort(list.begin(), list.end(), compare_actors);
 
     for ( const Movie& m : list ) {
         if ( format_director(m.director) == director ) {
