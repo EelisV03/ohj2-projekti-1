@@ -288,38 +288,43 @@ void print_actors(const map<pair<string, int>, Movie>& movies) {
     }
 
 
-void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const string& actors, int number ) {
-    bool any = false;      
-    // Luodaan set-säiliö näyttelijöiden tallentamista varten.
-        map<string, int> actor_count;
+void print_actors_prolific(const map<pair<string, int>, Movie>& movies, int number) {
+    map<string, int> actor_count;
 
-        // Tallennetaan näyttelijät set -säiliöön.
-        for ( const auto& item : movies ) {
-            const Movie& m = item.second;
-            for ( const string& actor : m.actors ) {
-                actor_count[actor]++;
-            }
-        }
-    // Tallennetaan elokuvien tiedot vektoriin list.
-    vector<Movie> list;
-    for (const auto& data : actor_count) {
-        list.push_back(data.second);
-    }
-
-    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan ilman lambdaa.
-    sort(list.begin(), list.end(), compare_actors);
-
-    for ( const Movie& m : list ) {
-        if ( format_director(m.director) == director ) {
-            cout << "  " << m.name << " (" << m.year << ")" << endl;
-            any = true;
+    for ( const auto& item : movies ) {
+        const Movie& m = item.second;
+        for ( const string& actor : m.actors ) {
+            actor_count[actor]++;
         }
     }
 
-    if ( !any ) {
-        cout << "No movies directed by " << director << "." << endl;
-    }  
-  }
+    if ( actor_count.empty() ) {
+        cout << "No actors." << endl;
+        return;
+    }
+
+    vector<pair<string, int>> list;
+    for ( const auto& item : actor_count ) {
+        list.push_back(item);
+    }
+
+    sort(list.begin(), list.end(), [](const pair<string, int>& a,
+                                      const pair<string, int>& b) {
+        if ( a.second != b.second ) {
+            return a.second > b.second;
+        }
+        return format_actor(a.first) < format_actor(b.first);
+    });
+
+    int printed = 0;
+    for ( const auto& item : list ) {
+        if ( printed == number ) {
+            break;
+        }
+        cout << "  " << format_actor(item.first) << endl;
+        ++printed;
+    }
+}
 
 
     int main()
@@ -385,7 +390,7 @@ void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const st
                             }
                             if (digits) {
                             int number = stoi(fields[2]);
-                            print_actors_prolific(movies, actors, number);
+                            print_actors_prolific(movies, number);
                             }
                 }
             } else if ( command == "quit" ) {
