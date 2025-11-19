@@ -51,6 +51,15 @@ struct Movie {
     vector<string> actors;
 };
 
+// Vertailufunktio elokuvien järjestämiseen ilman lambdaa.
+bool compare_movies(const Movie& a, const Movie& b)
+{
+    if ( a.year != b.year ) {
+        return a.year < b.year;
+    }
+    return a.name < b.name;
+}
+
 
 // read yrittää avata tiedoston ja lukea sitä rivi kerrallaan.
 // Se tarkistaa myös virheet rivikohtaisesti ja tulostaa niiden ilmoitukset.
@@ -164,12 +173,8 @@ void print_movies(const map<pair<string, int>, Movie>& movies){
         list.push_back(data.second);
     }
 
-    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan.
-    sort(list.begin(), list.end(),[](const Movie& a, const Movie& b) {
-        if ( a.year != b.year)
-            return a.year < b.year;
-        return a.name < b.name;
-    });
+    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan ilman lambdaa.
+    sort(list.begin(), list.end(), compare_movies);
 
     // Suoritetaan tulostus.
     for (const Movie& m : list) {
@@ -217,12 +222,8 @@ void print_movies_by(const map<pair<string, int>, Movie>& movies,
         list.push_back(data.second);
     }
 
-    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan.
-    sort(list.begin(), list.end(),[](const Movie& a, const Movie& b) {
-        if ( a.year != b.year)
-            return a.year < b.year;
-        return a.name < b.name;
-    });
+    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan ilman lambdaa.
+    sort(list.begin(), list.end(), compare_movies);
 
     for ( const Movie& m : list ) {
         if ( format_director(m.director) == director ) {
