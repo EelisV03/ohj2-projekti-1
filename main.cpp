@@ -158,8 +158,6 @@ string format_director(const string& director) {
 // ja arvona Movie-struct. Funktio ei palauta mitään.
 void print_movies(const map<pair<string, int>, Movie>& movies){
 
-
-
     // Tallennetaan elokuvien tiedot vektoriin list.
     vector<Movie> list;
     for (const auto& data : movies) {
@@ -183,94 +181,192 @@ void print_movies(const map<pair<string, int>, Movie>& movies){
 
 // Listaa ne elokuvat, jotka on julkaistu parametrin määrittämänä vuotena
 // elokuvan nimen mukaan aakkosjärjestyksessä.
-// Funktion parametrina on map-säiliö movies, jonka avaimena on (nimi, vuosi)
+// Funktion parametrina ovat map-säiliö movies, jonka avaimena on (nimi, vuosi)
 // ja arvona Movie-struct ja toisena parametrinä vuosi year.
 // Funktio ei palauta mitään.
 void print_movies_from(const map<pair<string, int>, Movie>& movies, int year) {
     bool any = false;
+
     for ( const auto& data : movies ) {
         const Movie& m = data.second;
         if ( m.year == year ) {
-            cout << "  " << m.name << " (dir. " << format_director(m.director) << ")" << endl;
+            cout << "  " << m.name << " (dir. " <<
+                    format_director(m.director) << ")" << endl;
             any = true;
         }
     }
+
     if ( !any ) {
         cout << "No movies released in " << year << "." << endl;
     }
 }
 
-void print_movies_by(const map<set<string, int>, Movie>& movies, string director) {
+
+// Listaa ne elokuvat, jotka ovat parametrina annetun henkilön ohjaamia.
+// Elokuvat listataan samalla periaatteella, kuin komennossa movies.
+// Funktion parametrina ovat map-säiliö movies, jonka avaimena on (nimi, vuosi)
+// ja arvona Movie-struct ja toisena parametrina on ohjaaja director.
+// Funktio ei palauta mitään.
+void print_movies_by(const map<pair<string, int>, Movie>& movies,
+                     const string& director) {
     bool any = false;
-    for ( const auto& data : movies ) {
-        const Movie& m = data.third;
-        if ( m.director == format_director(m.director) ) {
+
+    // Tallennetaan elokuvien tiedot vektoriin list.
+    vector<Movie> list;
+    for (const auto& data : movies) {
+        list.push_back(data.second);
+    }
+
+    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan.
+    sort(list.begin(), list.end(),[](const Movie& a, const Movie& b) {
+        if ( a.year != b.year)
+            return a.year < b.year;
+        return a.name < b.name;
+    });
+
+    for ( const Movie& m : list ) {
+        if ( format_director(m.director) == director ) {
             cout << "  " << m.name << " (" << m.year << ")" << endl;
             any = true;
         }
     }
+
     if ( !any ) {
-        cout << "No movies released in " << director << "." << endl;
+        cout << "No movies directed by " << director << "." << endl;
     }
+
 }
 
 
+// Funktio muuttaa näyttelijän etunimen ja sukunimen paikan keskenään
+// ja poistaa pilkun.
+// Funktion parametrinä on movies map-säiliön actor arvot.
+// Funktio palauttaa näyttelijän nimet käännettynä muodossa "etunimi sukunimi".
+string format_actor(const string& actor) {
+    vector<string> parts = split(actor, ',', true);
 
-int main()
-{
+    return parts[1] + " " + parts[0];
+}
 
-    map<pair<string, int>, Movie> movies;
+// Listaa kaikki ohjelman tuntemat näyttelijät ensisijaisesti sukunimen,
+// ja sitten etunimen mukaisesti aakkosjärjestykseen, kahdella välilyönnillä
+// sisennettynä.
+// Funktion parametrinä on map-säiliö movies, jonka avaimena on (nimi, vuosi)
+// ja arvona Movie-struct. Funktio ei palauta mitään.
+void print_actors(const map<pair<string, int>, Movie>& movies) {
 
-    while (true) {
-        cout << "> ";
-        string input;
-        getline(cin, input);
+    // Luodaan set-säiliö näyttelijöiden tallentamista varten.
+    set<string> actors_set;
 
-        vector<string> fields = split(input, ' ', true);
-        string command = fields[0];
+    // Tallennetaan näyttelijät set -säiliöön.
+    for ( const auto& item : movies ) {
+        const Movie& m = item.second;
+        for ( const string& actor : m.actors ) {
+            actors_set.insert(actor);
+        }
+    }
+    // Tulostukset.
+        if ( actors_set.empty() ) {
+            cout << "No actors." << endl;
+        } else {
+            for ( const string& actor : actors_set ) {
+                cout << "  " << format_actor(actor) << endl;
+            }
+        }
+    }
 
-        // Kun käyttäjä käyttää "read" -komentoa.
-        if ( command == "read" ) {
-            if ( fields.size() != 2) {
-                cout << "Error: wrong amount of parameters." << endl;
+
+void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const string& actors, int number ) {
+        // Luodaan set-säiliö näyttelijöiden tallentamista varten.
+        map<string, int> actor_count;
+
+        // Tallennetaan näyttelijät set -säiliöön.
+        for ( const auto& item : movies ) {
+            const Movie& m = item.second;
+            for ( const string& actor : m.actors ) {
+                actor_count[actor]++;
+            }
+        }
+    }
+
+
+    int main()
+    {
+
+        map<pair<string, int>, Movie> movies;
+
+        while (true) {
+            cout << "> ";
+            string input;
+            getline(cin, input);
+
+            vector<string> fields = split(input, ' ', true);
+            string command = fields[0];
+
+            // Kun käyttäjä käyttää "read" -komentoa.
+            if ( command == "read" ) {
+                if ( fields.size() != 2) {
+                    cout << "Error: wrong amount of parameters." << endl;
+                } else {
+                    string file_name = fields[1];
+                    read(file_name, movies);
+                }
+
+
+            } else if ( command == "movies" ) {
+                if ( movies.empty()) {
+                    cout << "No movies." << endl;
+                } else if ( fields.size() == 1 ) {
+                    print_movies(movies);
+                } else if ( fields.size() == 3 && fields[1] == "from" ) {
+                    string year = fields[2];
+                    bool digits = true;
+                    for ( char c : year) {
+                        if ( !isdigit(c)) {
+                            digits = false;
+                            cout << "Error: invalid parameter." << endl;
+                            break;
+                        }
+                    }
+                    if (digits) {
+
+                        int year = stoi(fields[2]);
+                        print_movies_from(movies, year);
+                    }
+                } else if ( fields.size() == 4 && fields[1] == "by" ) {
+                    string director = fields[2] + " " + fields[3];
+                    print_movies_by(movies, director);
+                }
+
+            } else if ( command == "actors" ) {
+                if ( fields.size() == 1) {
+                    print_actors(movies);}
+                else if ( fields.size() == 3 && fields[1] == "prolific" ) {
+                            string number = fields[2];
+                            bool digits = true;
+                            for ( char c : number) {
+                                if ( !isdigit(c)) {
+                                    digits = false;
+                                    cout << "Error: invalid parameter." << endl;
+                                    break;
+                                }
+                            }
+                            if (digits) {
+                            int number = stoi(fields[2]);
+                            print_actors_prolific(movies, actors, number);
+                            }
+                }
+            } else if ( command == "quit" ) {
+                return EXIT_SUCCESS;
+
+            } else if ( command == "help" ) {
+                help();
+
             } else {
-                string file_name = fields[1];
-                read(file_name, movies);
+                cout << "Error: unknown command." << endl;
             }
 
 
-        } else if ( command == "movies" ) {
-            if ( movies.empty()) {
-                cout << "No movies." << endl;
-            } else if ( fields.size() == 1 ) {
-                print_movies(movies);
-            } else if ( fields.size() == 3 && fields[1] == "from" ) {
-                string year = fields[2];
-                bool digits = true;
-                for ( char c : year) {
-                    if ( !isdigit(c)) {
-                        digits = false;
-                        cout << "Error: invalid parameter." << endl;
-                        break;
-                    }
-                }
-                if (digits) {
-
-                    int year = stoi(fields[2]);
-                    print_movies_from(movies, year);
-                }
+            cout << " " << endl;
         }
-        } else if ( command == "quit" ) {
-            return EXIT_SUCCESS;
-
-        } else if ( command == "help" ) {
-            help();
-
-        } else {
-            cout << "Error: unknown command." << endl;
-        }
-
-
-        cout << " " << endl;
     }
-}
