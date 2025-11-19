@@ -243,6 +243,17 @@ void print_movies_by(const map<pair<string, int>, Movie>& movies,
 // ja poistaa pilkun.
 // Funktion parametrinä on movies map-säiliön actor arvot.
 // Funktio palauttaa näyttelijän nimet käännettynä muodossa "etunimi sukunimi".
+
+bool compare_actors(const Movie& a, const Movie& b)
+{
+    if ( a.year != b.year ) {
+        return a.year > b.year;
+    }
+    return a.name < b.name;
+}
+
+
+
 string format_actor(const string& actor) {
     vector<string> parts = split(actor, ',', true);
 
@@ -278,7 +289,8 @@ void print_actors(const map<pair<string, int>, Movie>& movies) {
 
 
 void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const string& actors, int number ) {
-        // Luodaan set-säiliö näyttelijöiden tallentamista varten.
+    bool any = false;      
+    // Luodaan set-säiliö näyttelijöiden tallentamista varten.
         map<string, int> actor_count;
 
         // Tallennetaan näyttelijät set -säiliöön.
@@ -288,7 +300,26 @@ void print_actors_prolific(const map<pair<string, int>, Movie>& movies, const st
                 actor_count[actor]++;
             }
         }
+    // Tallennetaan elokuvien tiedot vektoriin list.
+    vector<Movie> list;
+    for (const auto& data : actor_count) {
+        list.push_back(data.second);
     }
+
+    // Lajitellaan elokuvat vuosiluvun ja aakkosjärjestyksen mukaan ilman lambdaa.
+    sort(list.begin(), list.end(), compare_movies);
+
+    for ( const Movie& m : list ) {
+        if ( format_director(m.director) == director ) {
+            cout << "  " << m.name << " (" << m.year << ")" << endl;
+            any = true;
+        }
+    }
+
+    if ( !any ) {
+        cout << "No movies directed by " << director << "." << endl;
+    }  
+  }
 
 
     int main()
