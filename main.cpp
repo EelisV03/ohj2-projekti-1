@@ -145,7 +145,7 @@ void help() {
     cout << "  * from <year>: List all movies "
             "released in the given year." << endl;
     cout << "  * by <first_name> <last_name>: List all"
-            " movies directed by the given director." endl;
+            " movies directed by the given director." << endl;
     cout << "  actors: List all actors." << endl;
     cout << "  * prolific <n>: List the top <n> actors "
             "that have acted in the most movies." << endl;
@@ -242,19 +242,6 @@ void print_movies_by(const map<pair<string, int>, Movie>& movies,
 }
 
 
-// Järjestää näyttelijät ensin esiintymiskertojen mukaisesti laskevassa
-// järjestyksessä, sitten nimen aakkosjärjestyksessä.
-// Funktion parametriä b verrataan parametriin a.
-// Funktio palauttaa true, jos näyttelijä a tulee ennen näyttelijää b
-// lopulliseen järjestykseen. Ja false, jos näyttelijä a ei tule ennen b:tä.
-bool compare_actors(const Movie& a, const Movie& b) {
-    if ( a.year != b.year ) {
-        return a.year > b.year;
-    }
-    return a.name < b.name;
-}
-
-
 // Funktio muuttaa näyttelijän etunimen ja sukunimen paikan keskenään
 // ja poistaa pilkun.
 // Funktion parametrinä on movies map-säiliön actor arvot.
@@ -263,6 +250,19 @@ string format_actor(const string& actor) {
     vector<string> parts = split(actor, ',', true);
 
     return parts[1] + " " + parts[0];
+}
+
+
+// Järjestää näyttelijät ensin esiintymiskertojen mukaisesti laskevassa
+// järjestyksessä, sitten nimen aakkosjärjestyksessä.
+// Funktion parametriä b verrataan parametriin a.
+// Funktio palauttaa true, jos näyttelijä a tulee ennen näyttelijää b
+// lopulliseen järjestykseen. Ja false, jos näyttelijä a ei tule ennen b:tä.
+bool compare_actors(const pair<string, int>& a, const pair<string, int>& b) {
+    if ( a.second != b.second ) {
+        return a.second > b.second;
+    }
+    return format_actor(a.first) < format_actor(b.first);
 }
 
 
@@ -328,6 +328,7 @@ void print_actors_prolific(const map<pair<string, int>, Movie>& movies, int numb
         }
         cout << "  " << format_actor(actor.first) << ": " << actor.second
              << " movies" << endl;
+        ++printed;
     }
 }
 
